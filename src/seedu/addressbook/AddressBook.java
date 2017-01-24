@@ -564,7 +564,8 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeClearAddressBook() {
-        clearAddressBook();
+    	ALL_PERSONS.clear();
+        savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
         return MESSAGE_ADDRESSBOOK_CLEARED;
     }
 
@@ -808,13 +809,6 @@ public class AddressBook {
         return ALL_PERSONS;
     }
 
-    /**
-     * Clears all persons in the address book and saves changes to file.
-     */
-    private static void clearAddressBook() {
-        ALL_PERSONS.clear();
-        savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
-    }
 
     /**
      * Resets the internal model with the given data. Does not save to file.
