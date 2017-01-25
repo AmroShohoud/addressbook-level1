@@ -486,11 +486,29 @@ public class AddressBook {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
         for (String[] person : getAllPersonsInAddressBook()) {
             final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
-            if (!Collections.disjoint(wordsInName, keywords)) {
+            if (!Collections.disjoint(makeCollectionLowerCase(wordsInName), makeCollectionLowerCase(keywords))) {            	
                 matchedPersons.add(person);
             }
         }
         return matchedPersons;
+    }
+    
+    /**
+     * Makes all elements lower case
+     *
+     * @param set of Strings
+     * @return lower case set of Strings
+     */
+    
+    private static Collection<String> makeCollectionLowerCase(Collection<String> keywords) {
+        Set<String> lowerCaseKeywords = new HashSet<String>();
+        for (String keyword : keywords) {
+        	lowerCaseKeywords.add(keyword.toLowerCase());
+        }
+        if (!lowerCaseKeywords.isEmpty()){
+        	return lowerCaseKeywords;
+        }
+        return null;
     }
 
     /**
