@@ -207,7 +207,7 @@ public class AddressBook {
      */
 
     public static void main(String[] args) {
-        showWelcomeMessage();
+    	showToUser(DIVIDER, DIVIDER, VERSION, MESSAGE_WELCOME, DIVIDER);
         if (args.length >= 2) {
             showToUser(MESSAGE_INVALID_PROGRAM_ARGS);
             exitProgram();
@@ -218,31 +218,17 @@ public class AddressBook {
         }
 
         if(args.length == 0) { //Default File
-            setupDefaultFileForStorage();
+        	showToUser(MESSAGE_USING_DEFAULT_FILE);
+            storageFilePath = DEFAULT_STORAGE_FILEPATH;
+            createFileIfMissing(storageFilePath);
         }
-        loadDataFromStorage();
+        initialiseAddressBookModel(loadPersonsFromFile(storageFilePath));
         while (true) {
             String userCommand = getUserInput();
-            echoUserCommand(userCommand);
+            showToUser("[Command entered:" + userCommand + "]");
             String feedback = executeCommand(userCommand);
-            showResultToUser(feedback);
+            showToUser(feedback, DIVIDER);
         }
-    }
-
-    /*
-     * NOTE : =============================================================
-     * The method header comment can be omitted if the method is trivial
-     * and the header comment is going to be almost identical to the method
-     * signature anyway.
-     * ====================================================================
-     */
-
-    private static void showWelcomeMessage() {
-        showToUser(DIVIDER, DIVIDER, VERSION, MESSAGE_WELCOME, DIVIDER);
-    }
-
-    private static void showResultToUser(String result) {
-        showToUser(result, DIVIDER);
     }
 
     /*
@@ -252,13 +238,6 @@ public class AddressBook {
      * In the method below, '@param userInput' comment has been omitted.
      * ====================================================================
      */
-
-    /**
-     * Echoes the user input back to the user.
-     */
-    private static void echoUserCommand(String userCommand) {
-        showToUser("[Command entered:" + userCommand + "]");
-    }
 
     /**
      * Sets up the storage file based on the supplied file path.
@@ -282,17 +261,6 @@ public class AddressBook {
     private static void exitProgram() {
         showToUser(MESSAGE_GOODBYE, DIVIDER, DIVIDER);
         System.exit(0);
-    }
-
-    /**
-     * Sets up the storage based on the default file.
-     * Creates file if missing.
-     * Exits program if the file cannot be created.
-     */
-    private static void setupDefaultFileForStorage() {
-        showToUser(MESSAGE_USING_DEFAULT_FILE);
-        storageFilePath = DEFAULT_STORAGE_FILEPATH;
-        createFileIfMissing(storageFilePath);
     }
 
     /**
@@ -330,14 +298,6 @@ public class AddressBook {
     private static boolean hasValidFileName(Path filePath) {
         return filePath.getFileName().toString().lastIndexOf('.') > 0
                 && (!Files.exists(filePath) || Files.isRegularFile(filePath));
-    }
-
-    /**
-     * Initialises the in-memory data using the storage file.
-     * Assumption: The file exists.
-     */
-    private static void loadDataFromStorage() {
-        initialiseAddressBookModel(loadPersonsFromFile(storageFilePath));
     }
 
 
