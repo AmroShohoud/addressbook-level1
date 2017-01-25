@@ -224,7 +224,13 @@ public class AddressBook {
         }
         initialiseAddressBookModel(loadPersonsFromFile(storageFilePath));
         while (true) {
-            String userCommand = getUserInput();
+        	System.out.print(LINE_PREFIX + "Enter command: ");
+            String inputLine = SCANNER.nextLine();
+            // silently consume all blank and comment lines
+            while (inputLine.trim().isEmpty() || inputLine.trim().charAt(0) == INPUT_COMMENT_MARKER) {
+                inputLine = SCANNER.nextLine();
+            }
+            String userCommand = inputLine;
             showToUser("[Command entered:" + userCommand + "]");
             String feedback = executeCommand(userCommand);
             showToUser(feedback, DIVIDER);
@@ -314,7 +320,9 @@ public class AddressBook {
      * @return  feedback about how the command was executed
      */
     private static String executeCommand(String userInputString) {
-        final String[] commandTypeAndParams = splitCommandWordAndArgs(userInputString);
+    	int splittedElements = 2;
+        final String[] splittedCommand =  userInputString.trim().split("\\s+", splittedElements);
+        final String[] commandTypeAndParams = splittedCommand.length == splittedElements ? splittedCommand : new String[] { splittedCommand[0] , "" }; // else case: no parameters
         final String commandType = commandTypeAndParams[0];
         final String commandArgs = commandTypeAndParams[1];
         switch (commandType) {
@@ -335,17 +343,6 @@ public class AddressBook {
         default:
             return getMessageForInvalidCommandInput(commandType, getUsageInfoForAllCommands());
         }
-    }
-
-    /**
-     * Splits raw user input into command word and command arguments string
-     *
-     * @return  size 2 array; first element is the command type and second element is the arguments string
-     */
-    private static String[] splitCommandWordAndArgs(String rawUserInput) {
-    	int splittedElements = 2;
-        final String[] splittedCommand =  rawUserInput.trim().split("\\s+", splittedElements);
-        return splittedCommand.length == splittedElements ? splittedCommand : new String[] { splittedCommand[0] , "" }; // else case: no parameters
     }
 
     /**
@@ -450,7 +447,14 @@ public class AddressBook {
      * @return feedback display message for the operation result
      */
     private static String executeDeletePerson(String commandArgs) {
-        if (!isDeletePersonArgsValid(commandArgs)) {
+    	boolean isDeletePersonArgsValid = false;
+    	 try {
+             final int extractedIndex = Integer.parseInt(commandArgs.trim()); // use standard libraries to parse
+             isDeletePersonArgsValid = extractedIndex >= DISPLAYED_INDEX_OFFSET;
+         } catch (NumberFormatException nfe) {
+             isDeletePersonArgsValid = false;
+         }
+        if (!isDeletePersonArgsValid) {
             return getMessageForInvalidCommandInput(COMMAND_DELETE_WORD, getUsageInfoForDeleteCommand());
         }
         final int targetVisibleIndex = extractTargetIndexFromDeletePersonArgs(commandArgs);
@@ -460,21 +464,6 @@ public class AddressBook {
         final String[] targetInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
         return deletePersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
                                                           : MESSAGE_PERSON_NOT_IN_ADDRESSBOOK; // not found
-    }
-
-    /**
-     * Checks validity of delete person argument string's format.
-     *
-     * @param rawArgs raw command args string for the delete person command
-     * @return whether the input args string is valid
-     */
-    private static boolean isDeletePersonArgsValid(String rawArgs) {
-        try {
-            final int extractedIndex = Integer.parseInt(rawArgs.trim()); // use standard libraries to parse
-            return extractedIndex >= DISPLAYED_INDEX_OFFSET;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
     }
 
     /**
@@ -542,22 +531,6 @@ public class AddressBook {
      *               UI LOGIC
      * ===========================================
      */
-
-    /**
-     * Prompts for the command and reads the text entered by the user.
-     * Ignores lines with first non-whitespace char equal to {@link #INPUT_COMMENT_MARKER} (considered comments)
-     *
-     * @return full line entered by the user
-     */
-    private static String getUserInput() {
-        System.out.print(LINE_PREFIX + "Enter command: ");
-        String inputLine = SCANNER.nextLine();
-        // silently consume all blank and comment lines
-        while (inputLine.trim().isEmpty() || inputLine.trim().charAt(0) == INPUT_COMMENT_MARKER) {
-            inputLine = SCANNER.nextLine();
-        }
-        return inputLine;
-    }
 
    /*
     * NOTE : =============================================================
@@ -805,22 +778,6 @@ public class AddressBook {
     }
 
     /**
-     * Creates a person from the given data.
-     *
-     * @param name of person
-     * @param phone without data prefix
-     * @param email without data prefix
-     * @return constructed person
-     */
-    private static String[] makePersonFromData(String name, String phone, String email) {
-        final String[] person = new String[PERSON_DATA_COUNT];
-        person[PERSON_DATA_INDEX_NAME] = name;
-        person[PERSON_DATA_INDEX_PHONE] = phone;
-        person[PERSON_DATA_INDEX_EMAIL] = email;
-        return person;
-    }
-
-    /**
      * Encodes a person into a decodable and readable string representation.
      *
      * @param person to be encoded
@@ -864,11 +821,10 @@ public class AddressBook {
         if (!isPersonDataExtractableFrom(encoded)) {
             return Optional.empty();
         }
-        final String[] decodedPerson = makePersonFromData(
-                extractNameFromPersonString(encoded),
-                extractPhoneFromPersonString(encoded),
-                extractEmailFromPersonString(encoded)
-        );
+        final String[] decodedPerson = new String[PERSON_DATA_COUNT];
+        decodedPerson[PERSON_DATA_INDEX_NAME] =  extractNameFromPersonString(encoded);
+        decodedPerson[PERSON_DATA_INDEX_PHONE] = extractPhoneFromPersonString(encoded);
+        decodedPerson[PERSON_DATA_INDEX_EMAIL] = extractEmailFromPersonString(encoded);
         // check that the constructed person is valid
         return isPersonDataValid(decodedPerson) ? Optional.of(decodedPerson) : Optional.empty();
     }
