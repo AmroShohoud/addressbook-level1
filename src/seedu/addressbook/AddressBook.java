@@ -394,8 +394,9 @@ public class AddressBook {
      * @return  size 2 array; first element is the command type and second element is the arguments string
      */
     private static String[] splitCommandWordAndArgs(String rawUserInput) {
-        final String[] splittedCommand =  rawUserInput.trim().split("\\s+", 2);
-        return splittedCommand.length == 2 ? splittedCommand : new String[] { splittedCommand[0] , "" }; // else case: no parameters
+    	int splittedElements = 2;
+        final String[] splittedCommand =  rawUserInput.trim().split("\\s+", splittedElements);
+        return splittedCommand.length == splittedElements ? splittedCommand : new String[] { splittedCommand[0] , "" }; // else case: no parameters
     }
 
     /**
