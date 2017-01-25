@@ -262,11 +262,11 @@ public class AddressBook {
             exitProgram();
         }
 
-        if (args.length == 1) {
+        if (args.length == 1) { //File given
             setupGivenFileForStorage(args[0]);
         }
 
-        if(args.length == 0) {
+        if(args.length == 0) { //Default File
             setupDefaultFileForStorage();
         }
     }
